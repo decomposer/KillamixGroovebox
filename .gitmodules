@@ -1,0 +1,3 @@
+[submodule "Chuckery"]
+	path = Chuckery
+	url = https://github.com/scotchi/Chuckery.git

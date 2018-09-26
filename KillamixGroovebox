@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+CHUCK_DIRS=Chuckery/include ./Chuckery/upchuck KillamixGroovebox.ck
