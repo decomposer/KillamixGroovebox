@@ -10,6 +10,7 @@ class GrooveBox extends MidiHandler
     firstButton => int currentButton;
     1::minute / bpm / 2 => dur beat;
     1 => int step;
+    1 => int channel;
     int notes[16][8];
 
     open(1, 1);
@@ -52,6 +53,11 @@ class GrooveBox extends MidiHandler
             value > 0 ? 1 : 0 => notes[channel - 1][control - firstButton - 1];
             <<< notes[channel - 1][control - firstButton - 1] >>>;
         }
+        else if(control == 23)
+        {
+            <<< "channel", channel >>>;
+            channel => this.channel;
+        }
     }
 
     fun void groove()
@@ -60,7 +66,7 @@ class GrooveBox extends MidiHandler
 
         while(true)
         {
-            spork ~ flashButton(1, step);
+            spork ~ flashButton(channel, step);
 
             if(step++ == 8)
             {
