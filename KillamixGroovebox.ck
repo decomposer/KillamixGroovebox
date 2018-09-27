@@ -1,39 +1,49 @@
 #include(MidiHandler)
 
-new MidiHandler @=> MidiHandler @ midi;
-
-midi.open(1, 1);
-
-120 => int bpm;
-9 => int firstButton;
-firstButton => int currentButton;
-1::minute / bpm / 2 => dur beat;
-1 => int step;
-
-fun void flashButton(int channel, int button)
+class GrooveBox extends MidiHandler
 {
-    new ControlChangeMessage @=> ControlChangeMessage on;
-    button + firstButton => on.control;
+    9 => static int firstButton;
 
-    new ControlChangeMessage @=> ControlChangeMessage off;
-    button + firstButton => off.control;
-    0 => off.value;
+    120 => int bpm;
 
-    midi.send(on);
-    beat => now;
-    midi.send(off);
-}
+    firstButton => int currentButton;
+    1::minute / bpm / 2 => dur beat;
+    1 => int step;
 
-while(true)
-{
-    <<< "step", step >>>;
+    open(1, 1);
 
-    spork ~ flashButton(1, step);
-
-    if(step++ == 8)
+    fun void flashButton(int channel, int button)
     {
-        1 => step;
+        new ControlChangeMessage @=> ControlChangeMessage on;
+        button + firstButton => on.control;
+
+        new ControlChangeMessage @=> ControlChangeMessage off;
+        button + firstButton => off.control;
+        0 => off.value;
+
+        send(on);
+        beat => now;
+        send(off);
     }
 
-    beat => now;
+    fun void groove()
+    {
+        spork ~ run();
+
+        while(true)
+        {
+            <<< step >>>;
+
+            spork ~ flashButton(1, step);
+
+            if(step++ == 8)
+            {
+                1 => step;
+            }
+
+            beat => now;
+        }
+    }
 }
+
+(new GrooveBox).groove();
