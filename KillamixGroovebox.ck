@@ -12,6 +12,7 @@ class GrooveBox extends MidiHandler
     1::minute / bpm / 2 => dur beat;
     1 => int step;
     1 => int channel;
+    false => int flashing;
     int notes[16][8];
     new MidiHandler @=> MidiHandler @ output;
 
@@ -51,18 +52,22 @@ class GrooveBox extends MidiHandler
 
     fun void flashButton(int channel, int button)
     {
+        true => flashing;
+
         if(notes[channel - 1][button - 1])
         {
             sendControlOff(channel, button + firstButton);
             flash / 2 => now;
-            sendControlOn(channel, button + firstButton);
         }
         else
         {
             sendControlOn(channel, button + firstButton);
             flash => now;
-            sendControlOff(channel, button + firstButton);
         }
+
+        sendControlChange(channel, button + firstButton,
+                          notes[channel - 1][button - 1] ? 127 : 0);
+        false => flashing;
     }
 
     fun void controlChange(int channel, int control, int value)
@@ -70,8 +75,14 @@ class GrooveBox extends MidiHandler
         <<< "Control Change: ", channel, control, value >>>;
         if(control >= firstButton && control <= firstButton + 8)
         {
-            <<< "setting", channel, control - firstButton, value > 0 ? 1 : 0 >>>;
-            value > 0 ? 1 : 0 => notes[channel - 1][control - firstButton - 1];
+            value > 0 ? 1 : 0 => value;
+
+            if(flashing && channel == this.channel && control - firstButton + 1 == step)
+            {
+                !value => value;
+            }
+
+            value => notes[channel - 1][control - firstButton - 1];
             <<< notes[channel - 1][control - firstButton - 1] >>>;
         }
         else if(control == 23)
