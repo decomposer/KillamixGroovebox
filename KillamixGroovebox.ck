@@ -3,7 +3,13 @@
 
 class GrooveBox extends MidiHandler
 {
-    9 => static int firstButton;
+    // These 4 should be set in a subclass
+
+    int inputDevice;
+    int outputDevice;
+    int firstButton;
+    int buttonCount;
+
     200::ms => static dur flash;
 
     dur beat;
@@ -13,18 +19,20 @@ class GrooveBox extends MidiHandler
     1 => int channel;
     false => int flashing;
 
-    int notes[16][8];
-    new MidiHandler @=> MidiHandler @ output;
+    int notes[][];
+
+    MidiHandler output;
 
     fun void setup()
     {
         firstButton => currentButton;
 
-        open(1, 1);
-        output.open(0, 0);
+        open(inputDevice, inputDevice);
+        output.open(outputDevice, outputDevice);
 
         setBPM(120);
-        clear();        
+
+        clear();
     }
 
     fun void clear()
@@ -35,32 +43,23 @@ class GrooveBox extends MidiHandler
             {
                 sendControlOff(channel, control);
             }
-            [ 0, 0, 0, 0, 0, 0, 0, 0 ] @=> notes[channel - 1];
         }
 
-        resetControls();
+        int notes[16][buttonCount];
+        notes @=> this.notes;
+
+        resetControls(this);
+        resetControls(output);
     }
 
-    fun void resetControls()
+    fun void resetControls(MidiHandler @ handler)
     {
-        for(1 => int channel; channel <= 16; channel++)
-        {
-            sendControlChange(channel, 1, 64);
-            sendControlChange(channel, 2, 0);
-            sendControlChange(channel, 3, 64);
-            sendControlChange(channel, 4, 116);
-
-            output.sendControlChange(channel, 1, 64);
-            output.sendControlChange(channel, 2, 0);
-            output.sendControlChange(channel, 3, 64);
-            output.sendControlChange(channel, 4, 116);
-        }
+        <<< "reset" >>>;
     }
 
     fun void setBPM(int bpm)
     {
-        8 => int steps;
-        1::minute / bpm / (steps / 4.0) => beat;
+        1::minute / bpm / (buttonCount / 4.0) => beat;
     }
 
     fun void flashButton(int channel, int button)
@@ -86,7 +85,7 @@ class GrooveBox extends MidiHandler
     fun void controlChange(int channel, int control, int value)
     {
         <<< "Control Change: ", channel, control, value >>>;
-        if(control >= firstButton && control <= firstButton + 8)
+        if(control >= firstButton && control <= firstButton + buttonCount)
         {
             value > 0 ? 1 : 0 => value;
 
@@ -98,11 +97,15 @@ class GrooveBox extends MidiHandler
             value => notes[channel - 1][control - firstButton - 1];
             <<< notes[channel - 1][control - firstButton - 1] >>>;
         }
-        else if(control == 23)
+        else
         {
-            <<< "channel", channel >>>;
-            channel => this.channel;
+            extraControls(channel, control, value);
         }
+    }
+
+    fun void extraControls(int channel, int control, int value)
+    {
+        <<< "extraControls", channel, control, value >>>;
     }
 
     fun void groove()
@@ -123,7 +126,7 @@ class GrooveBox extends MidiHandler
 
             spork ~ flashButton(channel, step);
 
-            if(step++ == 8)
+            if(step++ == buttonCount)
             {
                 1 => step;
             }
@@ -133,4 +136,32 @@ class GrooveBox extends MidiHandler
     }
 }
 
-(new GrooveBox).groove();
+class KillamixGrooveBox extends GrooveBox
+{
+    1 => inputDevice;
+    0 => outputDevice;
+    9 => firstButton;
+    8 => buttonCount;
+
+    fun void resetControls(MidiHandler @ handler)
+    {
+        for(1 => int ch; ch <= 16; ch++)
+        {
+            handler.sendControlChange(ch, 1, 64);
+            handler.sendControlChange(ch, 2, 0);
+            handler.sendControlChange(ch, 3, 64);
+            handler.sendControlChange(ch, 4, 116);
+        }
+    }
+
+    fun void extraControls(int ch, int control, int value)
+    {
+        if(control == 23)
+        {
+            ch => channel;
+        }
+    }
+}
+
+KillamixGrooveBox box;
+box.groove();
