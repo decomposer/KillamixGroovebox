@@ -7,20 +7,25 @@ class GrooveBox extends MidiHandler
     200::ms => static dur flash;
 
     dur beat;
-
-    setBPM(120);
-
-    firstButton => int currentButton;
+    int currentButton;
 
     1 => int step;
     1 => int channel;
     false => int flashing;
+
     int notes[16][8];
     new MidiHandler @=> MidiHandler @ output;
 
-    open(1, 1);
-    output.open(0, 0);
-    clear();
+    fun void setup()
+    {
+        firstButton => currentButton;
+
+        open(1, 1);
+        output.open(0, 0);
+
+        setBPM(120);
+        clear();        
+    }
 
     fun void clear()
     {
@@ -102,6 +107,8 @@ class GrooveBox extends MidiHandler
 
     fun void groove()
     {
+        setup();
+
         spork ~ run();
 
         while(true)
