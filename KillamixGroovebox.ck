@@ -12,6 +12,19 @@ class GrooveBox extends MidiHandler
 
     open(1, 1);
 
+    clear();
+
+    fun void clear()
+    {
+        for(1 => int channel; channel <= 16; channel++)
+        {
+            for(1 => int control; control <= 127; control++)
+            {
+                sendControlOff(channel, control);
+            }
+        }
+    }
+
     fun void flashButton(int channel, int button)
     {
         sendControlOn(channel, button + firstButton);
