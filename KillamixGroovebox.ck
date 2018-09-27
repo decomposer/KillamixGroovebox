@@ -29,6 +29,24 @@ class GrooveBox extends MidiHandler
             }
             [ 0, 0, 0, 0, 0, 0, 0, 0 ] @=> notes[channel - 1];
         }
+
+        resetControls();
+    }
+
+    fun void resetControls()
+    {
+        for(1 => int channel; channel <= 16; channel++)
+        {
+            sendControlChange(channel, 1, 64);
+            sendControlChange(channel, 2, 0);
+            sendControlChange(channel, 3, 64);
+            sendControlChange(channel, 4, 116);
+
+            output.sendControlChange(channel, 1, 64);
+            output.sendControlChange(channel, 2, 0);
+            output.sendControlChange(channel, 3, 64);
+            output.sendControlChange(channel, 4, 116);
+        }
     }
 
     fun void flashButton(int channel, int button)
