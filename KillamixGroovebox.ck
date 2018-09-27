@@ -12,18 +12,30 @@ class GrooveBox extends MidiHandler
 
     open(1, 1);
 
+    fun void sendControlChange(int channel, int control, int value)
+    {
+        new ControlChangeMessage @=> ControlChangeMessage m;
+        channel => m.channel;
+        control => m.control;
+        value => m.value;
+        send(m);
+    }
+
+    fun void sendControlOn(int channel, int control)
+    {
+        sendControlChange(channel, control, 127);
+    }
+
+    fun void sendControlOff(int channel, int control)
+    {
+        sendControlChange(channel, control, 0);
+    }
+
     fun void flashButton(int channel, int button)
     {
-        new ControlChangeMessage @=> ControlChangeMessage on;
-        button + firstButton => on.control;
-
-        new ControlChangeMessage @=> ControlChangeMessage off;
-        button + firstButton => off.control;
-        0 => off.value;
-
-        send(on);
+        sendControlOn(channel, button + firstButton);
         beat => now;
-        send(off);
+        sendControlOff(channel, button + firstButton);
     }
 
     fun void groove()
