@@ -1,4 +1,5 @@
 #include(MidiHandler)
+#include(MidiValues)
 
 class GrooveBox extends MidiHandler
 {
@@ -12,8 +13,10 @@ class GrooveBox extends MidiHandler
     1 => int step;
     1 => int channel;
     int notes[16][8];
+    new MidiHandler @=> MidiHandler @ output;
 
     open(1, 1);
+    output.open(0, 0);
     clear();
 
     fun void clear()
@@ -66,6 +69,14 @@ class GrooveBox extends MidiHandler
 
         while(true)
         {
+            for(1 => int channel; channel <= 16; channel++)
+            {
+                if(notes[channel - 1][step - 1])
+                {
+                    spork ~ output.sendNote(1, channel - 1 + midi["C1"], 127, beat);
+                }
+            }
+
             spork ~ flashButton(channel, step);
 
             if(step++ == 8)
