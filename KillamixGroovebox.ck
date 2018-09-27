@@ -6,10 +6,12 @@ class GrooveBox extends MidiHandler
     9 => static int firstButton;
     200::ms => static dur flash;
 
-    120 => int bpm;
+    dur beat;
+
+    setBPM(120);
 
     firstButton => int currentButton;
-    1::minute / bpm / 2 => dur beat;
+
     1 => int step;
     1 => int channel;
     false => int flashing;
@@ -48,6 +50,12 @@ class GrooveBox extends MidiHandler
             output.sendControlChange(channel, 3, 64);
             output.sendControlChange(channel, 4, 116);
         }
+    }
+
+    fun void setBPM(int bpm)
+    {
+        8 => int steps;
+        1::minute / bpm / (steps / 4.0) => beat;
     }
 
     fun void flashButton(int channel, int button)
