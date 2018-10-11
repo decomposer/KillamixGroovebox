@@ -103,8 +103,13 @@ class GrooveBox extends MidiHandler
                 !value => value;
             }
 
-            value => notes[channel - 1][control - firstButton - 1];
-            <<< notes[channel - 1][control - firstButton - 1] >>>;
+            control - firstButton - 1 => int noteIndex;
+
+            if(noteIndex >= 0)
+            {
+                value => notes[channel - 1][noteIndex];
+                <<< notes[channel - 1][noteIndex] >>>;
+            }
         }
         else
         {
