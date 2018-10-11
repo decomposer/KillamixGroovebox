@@ -1,6 +1,14 @@
 #include(MidiHandler)
 #include(MidiValues)
 
+// This GrooveBox class assumes:
+// - Each MIDI channel controls one pad
+// - There is a sequential array of MIDI PC controls that can be mapped to notes
+//
+// I'm not sure that generalizes to anything other than the Killamix, but some
+// attempt has been made to pack the obviously controller-specific code into a
+// subclass.
+
 class GrooveBox extends MidiHandler
 {
     // These 4 should be set in a subclass
