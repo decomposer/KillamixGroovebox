@@ -18,6 +18,7 @@ class GrooveBox extends MidiHandler
     1 => int step;
     1 => int channel;
     false => int flashing;
+    false => int playing;
 
     int notes[][];
 
@@ -116,17 +117,24 @@ class GrooveBox extends MidiHandler
 
         while(true)
         {
-            for(1 => int channel; channel <= 16; channel++)
+            if(playing)
             {
-                if(notes[channel - 1][step - 1])
+                for(1 => int channel; channel <= 16; channel++)
                 {
-                    spork ~ output.sendNote(1, channel - 1 + midi["C1"], 127, beat);
+                    if(notes[channel - 1][step - 1])
+                    {
+                        spork ~ output.sendNote(1, channel - 1 + midi["C1"], 127, beat);
+                    }
+                }
+
+                spork ~ flashButton(channel, step);
+
+                if(step++ == buttonCount)
+                {
+                    1 => step;
                 }
             }
-
-            spork ~ flashButton(channel, step);
-
-            if(step++ == buttonCount)
+            else
             {
                 1 => step;
             }
@@ -159,6 +167,7 @@ class KillamixGrooveBox extends GrooveBox
         if(control == playStopButton)
         {
             setForAllChannels(this, playStopButton, value);
+            value > 0 ? true : false => playing;
         }
         if(control == channelButton)
         {
