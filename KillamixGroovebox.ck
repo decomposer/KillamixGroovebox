@@ -143,22 +143,34 @@ class KillamixGrooveBox extends GrooveBox
     9 => firstButton;
     8 => buttonCount;
 
+    23 => static int channelButton;
+    18 => static int playStopButton;
+
     fun void resetControls(MidiHandler @ handler)
     {
-        for(1 => int ch; ch <= 16; ch++)
-        {
-            handler.sendControlChange(ch, 1, 64);
-            handler.sendControlChange(ch, 2, 0);
-            handler.sendControlChange(ch, 3, 64);
-            handler.sendControlChange(ch, 4, 116);
-        }
+        setForAllChannels(handler, 1, 64);
+        setForAllChannels(handler, 2, 0);
+        setForAllChannels(handler, 3, 64);
+        setForAllChannels(handler, 4, 116);
     }
 
     fun void extraControls(int ch, int control, int value)
     {
-        if(control == 23)
+        if(control == playStopButton)
+        {
+            setForAllChannels(this, playStopButton, value);
+        }
+        if(control == channelButton)
         {
             ch => channel;
+        }
+    }
+
+    fun void setForAllChannels(MidiHandler @ handler, int control, int value)
+    {
+        for(1 => int ch; ch <= 16; ch++)
+        {
+            handler.sendControlChange(ch, control, value);
         }
     }
 }
