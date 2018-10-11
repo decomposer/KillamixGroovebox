@@ -154,6 +154,10 @@ class KillamixGrooveBox extends GrooveBox
     23 => static int channelButton;
     18 => static int playStopButton;
 
+    time lastPlayClick;
+
+    300::ms => static dur doubleClickInterval;
+
     fun void resetControls(MidiHandler @ handler)
     {
         setForAllChannels(handler, 1, 64);
@@ -166,6 +170,13 @@ class KillamixGrooveBox extends GrooveBox
     {
         if(control == playStopButton)
         {
+            if(now - lastPlayClick < doubleClickInterval)
+            {
+                clear();
+                0 => value;
+            }
+
+            now => lastPlayClick;
             setForAllChannels(this, playStopButton, value);
             value > 0 ? true : false => playing;
         }
